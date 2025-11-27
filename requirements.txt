@@ -1,0 +1,30 @@
+# Deep Learning
+ultralytics
+torch
+torchvision
+
+# GUI Framework
+PyQt6
+PyQt6-Charts
+
+# Image Processing
+opencv-python
+numpy
+pillow
+
+# Data Processing and Visualization
+pandas
+matplotlib
+seaborn
+
+# Database
+pymysql
+cryptography
+
+# Utilities
+pyyaml
+requests
+tqdm
+
+# Packaging Tool
+pyinstaller
