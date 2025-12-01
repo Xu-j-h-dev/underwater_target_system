@@ -43,10 +43,18 @@ class Application:
         
         # 创建主窗口
         self.main_window = MainWindow(user_info)
+        # 连接切换账号信号
+        self.main_window.logout_signal.connect(self.show_login)
         self.main_window.show()
+    
+    def show_login(self):
+        """显示登录窗口"""
+        self.login_window = LoginWindow()
+        self.login_window.login_success.connect(self.on_login_success)
+        self.login_window.show()
 
 def main():
-    """主函数"""
+   
     try:
         app = Application()
         sys.exit(app.start())

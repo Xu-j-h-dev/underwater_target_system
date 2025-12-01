@@ -21,115 +21,157 @@ class LoginWindow(QWidget):
     def init_ui(self):
         """初始化UI"""
         self.setWindowTitle('水下目标识别系统 - 登录')
-        self.setFixedSize(400, 500)
+        self.setFixedSize(450, 580)
         self.setStyleSheet("""
             QWidget {
-                background-color: #f0f0f0;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                    stop:0 #4facfe, stop:0.5 #00f2fe, stop:1 #667eea);
             }
             QLabel#title {
-                font-size: 24px;
+                font-size: 28px;
                 font-weight: bold;
-                color: #2c3e50;
+                color: white;
+                letter-spacing: 2px;
+            }
+            QLabel#subtitle {
+                color: rgba(255, 255, 255, 0.9);
+                font-size: 12px;
             }
             QLabel {
-                font-size: 12px;
-                color: #34495e;
+                font-size: 13px;
+                color: white;
+                font-weight: 500;
+                background: transparent;
+            }
+            QLabel#field_label {
+                font-size: 14px;
+                color: white;
+                font-weight: 600;
+                margin-bottom: 5px;
             }
             QLineEdit {
-                padding: 10px;
-                border: 2px solid #bdc3c7;
-                border-radius: 5px;
-                font-size: 14px;
-                background-color: white;
+                padding: 14px 18px;
+                border: 2px solid rgba(255, 255, 255, 0.4);
+                border-radius: 10px;
+                font-size: 15px;
+                background-color: rgba(255, 255, 255, 0.95);
+                color: #2c3e50;
+                min-height: 20px;
             }
             QLineEdit:focus {
-                border: 2px solid #3498db;
+                border: 2px solid #ffffff;
+                background-color: white;
+            }
+            QLineEdit::placeholder {
+                color: #95a5a6;
             }
             QPushButton {
-                padding: 10px;
-                font-size: 14px;
+                padding: 14px;
+                font-size: 15px;
                 font-weight: bold;
-                border-radius: 5px;
-                background-color: #3498db;
-                color: white;
+                border-radius: 10px;
+                background-color: white;
+                color: #4facfe;
                 border: none;
+                min-height: 20px;
             }
             QPushButton:hover {
-                background-color: #2980b9;
+                background-color: #f0f8ff;
+                color: #00f2fe;
+                border: 2px solid white;
             }
             QPushButton:pressed {
-                background-color: #1f6391;
+                background-color: rgba(255, 255, 255, 0.8);
+            }
+            QPushButton#register_btn {
+                background-color: transparent;
+                border: 2px solid rgba(255, 255, 255, 0.8);
+                color: white;
+            }
+            QPushButton#register_btn:hover {
+                background-color: rgba(255, 255, 255, 0.15);
+                border: 2px solid white;
             }
         """)
         
         # 主布局
         main_layout = QVBoxLayout()
-        main_layout.setContentsMargins(40, 40, 40, 40)
-        main_layout.setSpacing(20)
+        main_layout.setContentsMargins(50, 50, 50, 50)
+        main_layout.setSpacing(15)
+        
+        # 顶部图标区域
+        icon_label = QLabel('🌊')
+        icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        icon_label.setStyleSheet('font-size: 48px; margin: 10px;')
+        main_layout.addWidget(icon_label)
         
         # 标题
-        title_label = QLabel('🌊 水下目标识别系统')
+        title_label = QLabel('水下目标识别系统')
         title_label.setObjectName('title')
         title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         main_layout.addWidget(title_label)
         
-        # Logo区域（可选）
+        # 副标题
         subtitle = QLabel('Underwater Target Detection System')
+        subtitle.setObjectName('subtitle')
         subtitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        subtitle.setStyleSheet('color: #7f8c8d; font-size: 11px;')
         main_layout.addWidget(subtitle)
         
-        main_layout.addSpacing(20)
+        main_layout.addSpacing(30)
         
-        # 用户名
-        username_label = QLabel('用户名')
+        # 用户名输入框
+        username_label = QLabel('👤 用户名')
+        username_label.setObjectName('field_label')
         main_layout.addWidget(username_label)
         
         self.username_input = QLineEdit()
-        self.username_input.setPlaceholderText('请输入用户名')
+        self.username_input.setPlaceholderText('请输入您的用户名')
+        self.username_input.setMinimumHeight(48)
         main_layout.addWidget(self.username_input)
         
-        # 密码
-        password_label = QLabel('密码')
+        main_layout.addSpacing(10)
+        
+        # 密码输入框
+        password_label = QLabel('🔒 密码')
+        password_label.setObjectName('field_label')
         main_layout.addWidget(password_label)
         
         self.password_input = QLineEdit()
-        self.password_input.setPlaceholderText('请输入密码')
+        self.password_input.setPlaceholderText('请输入您的密码')
         self.password_input.setEchoMode(QLineEdit.EchoMode.Password)
+        self.password_input.setMinimumHeight(48)
         main_layout.addWidget(self.password_input)
         
-        # 记住密码和忘记密码
-        remember_layout = QHBoxLayout()
-        self.info_label = QLabel('默认账号: admin/admin123, user/user123')
-        self.info_label.setStyleSheet('color: #95a5a6; font-size: 10px;')
-        remember_layout.addWidget(self.info_label)
-        remember_layout.addStretch()
-        main_layout.addLayout(remember_layout)
+        # 提示信息
+        main_layout.addSpacing(5)
+        self.info_label = QLabel('💡 默认账号: admin/admin123 或 user/user123')
+        self.info_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.info_label.setStyleSheet('color: rgba(255, 255, 255, 0.8); font-size: 11px;')
+        main_layout.addWidget(self.info_label)
+        
+        main_layout.addSpacing(10)
         
         # 登录按钮
-        self.login_button = QPushButton('登 录')
+        self.login_button = QPushButton('🚀 立即登录')
         self.login_button.clicked.connect(self.handle_login)
+        self.login_button.setCursor(Qt.CursorShape.PointingHandCursor)
         main_layout.addWidget(self.login_button)
         
+        main_layout.addSpacing(5)
+        
         # 注册按钮
-        self.register_button = QPushButton('注 册')
-        self.register_button.setStyleSheet("""
-            QPushButton {
-                background-color: #95a5a6;
-            }
-            QPushButton:hover {
-                background-color: #7f8c8d;
-            }
-        """)
+        self.register_button = QPushButton('✨ 创建新账号')
+        self.register_button.setObjectName('register_btn')
         self.register_button.clicked.connect(self.show_register_dialog)
+        self.register_button.setCursor(Qt.CursorShape.PointingHandCursor)
         main_layout.addWidget(self.register_button)
         
         main_layout.addStretch()
         
         # 版本信息
-        version_label = QLabel('Version 1.0.0 | Powered by YOLOv11')
+        version_label = QLabel('Version 1.0.0 | Powered by YOLOv11 🤖')
         version_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        version_label.setStyleSheet('color: #bdc3c7; font-size: 9px;')
+        version_label.setStyleSheet('color: rgba(255, 255, 255, 0.6); font-size: 10px;')
         main_layout.addWidget(version_label)
         
         self.setLayout(main_layout)

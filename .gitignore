@@ -1,29 +1,31 @@
-# Python cache and bytecode
+﻿# Python
 __pycache__/
 *.py[cod]
-*.pyd
+*$py.class
 *.so
-*.dll
+.Python
 
-# Virtual environments
+# Virtual Environment
 venv/
-.env
-.env.*
-.venv/
+env/
 ENV/
 
-# Tool caches
-.pytest_cache/
-.mypy_cache/
-pytestdebug.log
-.coverage
-htmlcov/
+# Logs
+logs/
+*.log
 
-# IDE/editor
+# Database
+*.db
+
+# Uploads and Results
+uploads/
+results/
+
+# IDE
 .vscode/
 .idea/
 *.swp
 
-# OS junk
+# System
 .DS_Store
 Thumbs.db

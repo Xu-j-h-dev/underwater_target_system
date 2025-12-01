@@ -5,9 +5,9 @@
 from PyQt6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, 
                              QPushButton, QLabel, QComboBox, QSlider, QFileDialog,
                              QMessageBox, QGroupBox, QTextEdit, QSpinBox, QDoubleSpinBox,
-                             QRadioButton, QButtonGroup)
-from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QThread
-from PyQt6.QtGui import QImage, QPixmap
+                             QRadioButton, QButtonGroup, QToolBar, QFrame, QSizePolicy, QMenu)
+from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QThread, QSize
+from PyQt6.QtGui import QImage, QPixmap, QAction, QIcon
 import cv2
 import numpy as np
 from services import inference_engine, model_manager
@@ -48,6 +48,9 @@ class InferenceThread(QThread):
 class MainWindow(QMainWindow):
     """主窗口类"""
     
+    # 添加切换账号信号
+    logout_signal = pyqtSignal()
+    
     def __init__(self, user_info):
         super().__init__()
         self.user_info = user_info
@@ -59,6 +62,12 @@ class MainWindow(QMainWindow):
         """初始化UI"""
         self.setWindowTitle(f'水下目标识别系统 - {self.user_info["username"]}')
         self.setGeometry(50, 50, 1400, 800)
+        
+        # 创建顶部工具栏
+        self.create_toolbar()
+        
+        # 隐藏默认菜单栏（菜单已集成到工具栏）
+        self.menuBar().setVisible(False)
         
         # 中心部件
         central_widget = QWidget()
@@ -77,11 +86,214 @@ class MainWindow(QMainWindow):
         
         central_widget.setLayout(main_layout)
         
-        # 菜单栏
-        self.create_menu_bar()
-        
         # 加载模型列表
         self.load_model_list()
+    
+    def create_toolbar(self):
+        """创建顶部工具栏（包含菜单）"""
+        toolbar = QToolBar()
+        toolbar.setMovable(False)
+        toolbar.setIconSize(QSize(24, 24))
+        toolbar.setStyleSheet("""
+            QToolBar {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                    stop:0 #4facfe, stop:1 #00f2fe);
+                border: none;
+                padding: 8px;
+                spacing: 10px;
+            }
+            QToolBar QLabel {
+                color: white;
+                font-size: 14px;
+                font-weight: bold;
+                padding: 5px 15px;
+                background: rgba(255, 255, 255, 0.2);
+                border-radius: 5px;
+            }
+            QToolBar QPushButton {
+                background-color: white;
+                color: #4facfe;
+                border: none;
+                padding: 8px 20px;
+                border-radius: 5px;
+                font-size: 13px;
+                font-weight: bold;
+            }
+            QToolBar QPushButton:hover {
+                background-color: #f0f8ff;
+                color: #00f2fe;
+            }
+            QToolBar QPushButton#menu_btn {
+                background-color: transparent;
+                color: white;
+                padding: 5px 15px;
+                border-radius: 5px;
+            }
+            QToolBar QPushButton#menu_btn:hover {
+                background-color: rgba(255, 255, 255, 0.2);
+            }
+            QToolBar QLabel#role_badge {
+                background: rgba(255, 215, 0, 0.9);
+                color: #2c3e50;
+                padding: 3px 10px;
+                border-radius: 10px;
+                font-size: 11px;
+            }
+            QMenu {
+                background-color: white;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+                padding: 5px;
+            }
+            QMenu::item {
+                padding: 8px 30px 8px 20px;
+                border-radius: 3px;
+            }
+            QMenu::item:selected {
+                background-color: #4facfe;
+                color: white;
+            }
+        """)
+        
+        # 左侧：系统标题
+        title_label = QLabel('🌊 水下目标识别系统')
+        toolbar.addWidget(title_label)
+        
+        toolbar.addSeparator()
+        
+        # 菜单按钮区域
+        # 文件菜单
+        file_btn = QPushButton('📁 文件')
+        file_btn.setObjectName('menu_btn')
+        file_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        file_menu = QMenu()
+        file_menu.addAction('🆕 新建项目')
+        file_menu.addAction('📂 打开项目')
+        file_menu.addAction('💾 保存结果')
+        file_menu.addSeparator()
+        file_menu.addAction('⚙️ 设置')
+        file_btn.setMenu(file_menu)
+        toolbar.addWidget(file_btn)
+        
+        # 视图菜单
+        view_btn = QPushButton('👁️ 视图')
+        view_btn.setObjectName('menu_btn')
+        view_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        view_menu = QMenu()
+        view_menu.addAction('🖼️ 全屏模式')
+        view_menu.addAction('📊 显示统计')
+        view_menu.addAction('🎨 主题设置')
+        view_btn.setMenu(view_menu)
+        toolbar.addWidget(view_btn)
+        
+        # 工具菜单
+        tools_btn = QPushButton('🔧 工具')
+        tools_btn.setObjectName('menu_btn')
+        tools_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        tools_menu = QMenu()
+        train_action = tools_menu.addAction('🎓 模型训练')
+        train_action.triggered.connect(self.open_training_window)
+        tools_menu.addAction('📦 模型仓库')
+        tools_menu.addSeparator()
+        if self.user_info.get('role') == 'admin':
+            admin_action = tools_menu.addAction('👑 管理员仪表盘')
+            admin_action.triggered.connect(self.open_admin_dashboard)
+        tools_btn.setMenu(tools_menu)
+        toolbar.addWidget(tools_btn)
+        
+        # 帮助菜单
+        help_btn = QPushButton('❓ 帮助')
+        help_btn.setObjectName('menu_btn')
+        help_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        help_menu = QMenu()
+        about_action = help_menu.addAction('ℹ️ 关于系统')
+        about_action.triggered.connect(self.show_about)
+        help_menu.addAction('📖 使用文档')
+        help_menu.addAction('🐛 问题反馈')
+        help_btn.setMenu(help_menu)
+        toolbar.addWidget(help_btn)
+        
+        # 添加伸缩空间
+        spacer = QWidget()
+        spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        toolbar.addWidget(spacer)
+        
+        # 右侧：用户信息区域
+        user_container = QWidget()
+        user_layout = QHBoxLayout(user_container)
+        user_layout.setContentsMargins(0, 0, 0, 0)
+        user_layout.setSpacing(10)
+        
+        # 角色标识
+        if self.user_info.get('role') == 'admin':
+            role_badge = QLabel('👑 管理员')
+            role_badge.setObjectName('role_badge')
+            user_layout.addWidget(role_badge)
+        
+        # 用户名显示
+        user_label = QLabel(f'👤 {self.user_info["username"]}')
+        user_layout.addWidget(user_label)
+        
+        # 切换账号按钮
+        switch_account_btn = QPushButton('🔄 切换账号')
+        switch_account_btn.clicked.connect(self.switch_account)
+        switch_account_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        user_layout.addWidget(switch_account_btn)
+        
+        # 退出按钮
+        logout_btn = QPushButton('🚪 退出登录')
+        logout_btn.clicked.connect(self.logout)
+        logout_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        logout_btn.setStyleSheet("""
+            QPushButton {
+                background-color: rgba(231, 76, 60, 0.9);
+                color: white;
+            }
+            QPushButton:hover {
+                background-color: #e74c3c;
+            }
+        """)
+        user_layout.addWidget(logout_btn)
+        
+        toolbar.addWidget(user_container)
+        
+        self.addToolBar(toolbar)
+    
+    def switch_account(self):
+        """切换账号"""
+        reply = QMessageBox.question(
+            self, 
+            '切换账号', 
+            '确定要切换账号吗？\n当前工作将不会保存。',
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+        )
+        
+        if reply == QMessageBox.StandardButton.Yes:
+            # 停止正在进行的检测
+            if self.inference_thread:
+                self.stop_detection()
+            
+            # 发送登出信号
+            self.logout_signal.emit()
+            self.close()
+    
+    def logout(self):
+        """退出登录"""
+        reply = QMessageBox.question(
+            self, 
+            '退出登录', 
+            '确定要退出系统吗？',
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+        )
+        
+        if reply == QMessageBox.StandardButton.Yes:
+            # 停止正在进行的检测
+            if self.inference_thread:
+                self.stop_detection()
+            
+            self.close()
+            import sys
+            sys.exit(0)
     
     def create_menu_bar(self):
         """创建菜单栏"""
