@@ -358,24 +358,7 @@ SYSTEM_CONFIG = {
 - `inference.log` - 推理日志
 - `training.log` - 训练日志
 
-## 🤝 贡献指南
 
-欢迎提交 Issue 和 Pull Request！
-
-## 📄 许可证
-
-MIT License
-
-## 👥 联系方式
-
-- 项目维护者：Underwater Detection Team
-- Email: admin@underwater.com
-
-## 🙏 致谢
-
-- [Ultralytics YOLOv11](https://github.com/ultralytics/ultralytics)
-- [PyQt6](https://www.riverbankcomputing.com/software/pyqt/)
-- [OpenCV](https://opencv.org/)
 
 ---
 
