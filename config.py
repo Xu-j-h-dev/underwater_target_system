@@ -42,16 +42,16 @@ YOLO_CONFIG = {
 # 训练配置
 TRAINING_CONFIG = {
     'epochs': 100,
-    'batch_size': 16,
+    'batch_size': 8,  # 降低batch_size避免内存问题
     'img_size': 640,
     'lr': 0.01,
-    'workers': 4,
+    'workers': 2,  # 降低workers数量避免多进程问题
     'patience': 50
 }
 
 # 系统配置
 SYSTEM_CONFIG = {
-    'device': 'cuda',  # cuda / cpu
+    'device': 'cpu',  # cuda / cpu
     'language': 'zh_CN',  # zh_CN / en_US
     'theme': 'light',  # light / dark
     'log_level': 'INFO'

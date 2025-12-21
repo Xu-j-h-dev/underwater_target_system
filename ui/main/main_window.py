@@ -5,7 +5,8 @@
 from PyQt6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, 
                              QPushButton, QLabel, QComboBox, QSlider, QFileDialog,
                              QMessageBox, QGroupBox, QTextEdit, QSpinBox, QDoubleSpinBox,
-                             QRadioButton, QButtonGroup, QToolBar, QFrame, QSizePolicy, QMenu)
+                             QRadioButton, QButtonGroup, QToolBar, QFrame, QSizePolicy, QMenu,
+                             QDialog, QLineEdit, QFormLayout, QDialogButtonBox, QListWidget)
 from PyQt6.QtCore import Qt, QTimer, pyqtSignal, QThread, QSize
 from PyQt6.QtGui import QImage, QPixmap, QAction, QIcon
 import cv2
@@ -162,27 +163,23 @@ class MainWindow(QMainWindow):
         toolbar.addSeparator()
         
         # 菜单按钮区域
-        # 文件菜单
-        file_btn = QPushButton('📁 文件')
-        file_btn.setObjectName('menu_btn')
-        file_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        file_menu = QMenu()
-        file_menu.addAction('🆕 新建项目')
-        file_menu.addAction('📂 打开项目')
-        file_menu.addAction('💾 保存结果')
-        file_menu.addSeparator()
-        file_menu.addAction('⚙️ 设置')
-        file_btn.setMenu(file_menu)
-        toolbar.addWidget(file_btn)
-        
         # 视图菜单
         view_btn = QPushButton('👁️ 视图')
         view_btn.setObjectName('menu_btn')
         view_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         view_menu = QMenu()
-        view_menu.addAction('🖼️ 全屏模式')
+        
+        # 全屏功能
+        self.fullscreen_action = view_menu.addAction('🖼️ 全屏模式')
+        self.fullscreen_action.setCheckable(True)
+        self.fullscreen_action.triggered.connect(self.toggle_fullscreen)
+        
         view_menu.addAction('📊 显示统计')
-        view_menu.addAction('🎨 主题设置')
+        
+        # 主题设置
+        theme_action = view_menu.addAction('🎨 主题设置')
+        theme_action.triggered.connect(self.open_theme_settings)
+        
         view_btn.setMenu(view_menu)
         toolbar.addWidget(view_btn)
         
@@ -194,6 +191,8 @@ class MainWindow(QMainWindow):
         train_action = tools_menu.addAction('🎓 模型训练')
         train_action.triggered.connect(self.open_training_window)
         tools_menu.addAction('📦 模型仓库')
+        register_action = tools_menu.addAction('➕ 注册模型')
+        register_action.triggered.connect(self.register_model)
         tools_menu.addSeparator()
         if self.user_info.get('role') == 'admin':
             admin_action = tools_menu.addAction('👑 管理员仪表盘')
@@ -647,8 +646,405 @@ class MainWindow(QMainWindow):
         self.admin_dashboard.show()
     
     def show_about(self):
-        """显示关于信息"""
+        """显示关于对话框"""
         QMessageBox.about(self, '关于', 
                          '水下目标识别系统 v1.0.0\n\n'
                          '基于 YOLOv11 + PyQt6 开发\n'
                          '支持实时/离线目标检测与模型训练')
+    
+    def toggle_fullscreen(self):
+        """切换全屏模式"""
+        if self.isFullScreen():
+            self.showNormal()
+            self.fullscreen_action.setChecked(False)
+        else:
+            self.showFullScreen()
+            self.fullscreen_action.setChecked(True)
+    
+    def open_theme_settings(self):
+        """打开主题设置对话框"""
+        dialog = ThemeSettingsDialog(self)
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            theme = dialog.get_selected_theme()
+            self.apply_theme(theme)
+    
+    def apply_theme(self, theme_name):
+        """应用主题"""
+        themes = {
+            'light': {
+                'name': '浅色主题',
+                'style': '''
+                    QWidget {
+                        background-color: #f5f5f5;
+                        color: #333;
+                    }
+                    QGroupBox {
+                        background-color: white;
+                        border: 1px solid #ddd;
+                        border-radius: 5px;
+                        margin-top: 10px;
+                        padding-top: 10px;
+                        font-weight: bold;
+                    }
+                    QGroupBox::title {
+                        color: #4facfe;
+                    }
+                    QPushButton {
+                        background-color: #4facfe;
+                        color: white;
+                        border: none;
+                        padding: 8px 15px;
+                        border-radius: 5px;
+                    }
+                    QPushButton:hover {
+                        background-color: #00f2fe;
+                    }
+                    QTextEdit {
+                        background-color: white;
+                        border: 1px solid #ddd;
+                        border-radius: 5px;
+                    }
+                '''
+            },
+            'dark': {
+                'name': '深色主题',
+                'style': '''
+                    QWidget {
+                        background-color: #2c3e50;
+                        color: #ecf0f1;
+                    }
+                    QGroupBox {
+                        background-color: #34495e;
+                        border: 1px solid #4a5f7f;
+                        border-radius: 5px;
+                        margin-top: 10px;
+                        padding-top: 10px;
+                        font-weight: bold;
+                    }
+                    QGroupBox::title {
+                        color: #3498db;
+                    }
+                    QPushButton {
+                        background-color: #3498db;
+                        color: white;
+                        border: none;
+                        padding: 8px 15px;
+                        border-radius: 5px;
+                    }
+                    QPushButton:hover {
+                        background-color: #2980b9;
+                    }
+                    QTextEdit {
+                        background-color: #34495e;
+                        border: 1px solid #4a5f7f;
+                        border-radius: 5px;
+                        color: #ecf0f1;
+                    }
+                    QLabel {
+                        color: #ecf0f1;
+                    }
+                    QComboBox {
+                        background-color: #34495e;
+                        color: #ecf0f1;
+                        border: 1px solid #4a5f7f;
+                        border-radius: 5px;
+                        padding: 5px;
+                    }
+                    QSlider::groove:horizontal {
+                        background: #4a5f7f;
+                        height: 8px;
+                        border-radius: 4px;
+                    }
+                    QSlider::handle:horizontal {
+                        background: #3498db;
+                        width: 18px;
+                        margin: -5px 0;
+                        border-radius: 9px;
+                    }
+                '''
+            },
+            'ocean': {
+                'name': '海洋主题',
+                'style': '''
+                    QWidget {
+                        background-color: #e8f4f8;
+                        color: #1a5490;
+                    }
+                    QGroupBox {
+                        background-color: #d4eaf7;
+                        border: 2px solid #4facfe;
+                        border-radius: 8px;
+                        margin-top: 10px;
+                        padding-top: 10px;
+                        font-weight: bold;
+                    }
+                    QGroupBox::title {
+                        color: #00838f;
+                    }
+                    QPushButton {
+                        background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                            stop:0 #4facfe, stop:1 #00f2fe);
+                        color: white;
+                        border: none;
+                        padding: 8px 15px;
+                        border-radius: 5px;
+                        font-weight: bold;
+                    }
+                    QPushButton:hover {
+                        background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                            stop:0 #00f2fe, stop:1 #4facfe);
+                    }
+                    QTextEdit {
+                        background-color: white;
+                        border: 2px solid #b3e5fc;
+                        border-radius: 5px;
+                        color: #1a5490;
+                    }
+                '''
+            }
+        }
+        
+        if theme_name in themes:
+            self.setStyleSheet(themes[theme_name]['style'])
+            # 保存设置到配置文件
+            config.SYSTEM_CONFIG['theme'] = theme_name
+            QMessageBox.information(self, '成功', f'已切换到{themes[theme_name]["name"]}!')
+    
+    def register_model(self):
+        """注册新模型"""
+        dialog = ModelRegisterDialog(self)
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            # 刷新模型列表
+            self.load_model_list()
+            QMessageBox.information(self, '成功', '模型注册成功！')
+
+
+class ModelRegisterDialog(QDialog):
+    """模型注册对话框"""
+    
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.model_file_path = None
+        self.init_ui()
+    
+    def init_ui(self):
+        """初始化UI"""
+        self.setWindowTitle('注册新模型')
+        self.setMinimumWidth(500)
+        
+        layout = QVBoxLayout()
+        
+        # 表单布局
+        form_layout = QFormLayout()
+        
+        # 模型名称
+        self.name_input = QLineEdit()
+        self.name_input.setPlaceholderText('请输入模型名称，如: mine')
+        form_layout.addRow('模型名称*:', self.name_input)
+        
+        # 版本号
+        self.version_input = QLineEdit()
+        self.version_input.setPlaceholderText('请输入版本号，如: 1.0')
+        self.version_input.setText('1.0')
+        form_layout.addRow('版本号*:', self.version_input)
+        
+        # 作者
+        self.author_input = QLineEdit()
+        self.author_input.setPlaceholderText('请输入作者名称')
+        form_layout.addRow('作者:', self.author_input)
+        
+        # 描述
+        self.description_input = QTextEdit()
+        self.description_input.setPlaceholderText('请输入模型描述信息')
+        self.description_input.setMaximumHeight(80)
+        form_layout.addRow('描述:', self.description_input)
+        
+        # 类别列表
+        self.classes_input = QLineEdit()
+        self.classes_input.setPlaceholderText('用逗号分隔，如: fish,coral,turtle')
+        self.classes_input.setText('fish,coral,turtle,shark,jellyfish,dolphin,submarine,diver')
+        form_layout.addRow('检测类别:', self.classes_input)
+        
+        # 模型文件选择
+        file_layout = QHBoxLayout()
+        self.file_label = QLabel('未选择文件')
+        file_layout.addWidget(self.file_label)
+        
+        browse_btn = QPushButton('浏览...')
+        browse_btn.clicked.connect(self.select_model_file)
+        file_layout.addWidget(browse_btn)
+        
+        file_widget = QWidget()
+        file_widget.setLayout(file_layout)
+        form_layout.addRow('模型文件*:', file_widget)
+        
+        layout.addLayout(form_layout)
+        
+        # 提示信息
+        tip_label = QLabel('提示: 带 * 的字段为必填项')
+        tip_label.setStyleSheet('color: #7f8c8d; font-size: 11px; padding: 5px;')
+        layout.addWidget(tip_label)
+        
+        # 按钮
+        button_box = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
+        button_box.accepted.connect(self.validate_and_accept)
+        button_box.rejected.connect(self.reject)
+        layout.addWidget(button_box)
+        
+        self.setLayout(layout)
+    
+    def select_model_file(self):
+        """选择模型文件"""
+        file_path, _ = QFileDialog.getOpenFileName(
+            self, 
+            '选择模型文件', 
+            str(config.MODELS_DIR),
+            'PyTorch Models (*.pt *.pth);;All Files (*)'
+        )
+        
+        if file_path:
+            self.model_file_path = file_path
+            self.file_label.setText(Path(file_path).name)
+            
+            # 如果模型名称为空，自动填充
+            if not self.name_input.text():
+                model_name = Path(file_path).stem
+                self.name_input.setText(model_name)
+    
+    def validate_and_accept(self):
+        """验证并接受"""
+        # 验证必填字段
+        name = self.name_input.text().strip()
+        version = self.version_input.text().strip()
+        
+        if not name:
+            QMessageBox.warning(self, '警告', '请输入模型名称！')
+            return
+        
+        if not version:
+            QMessageBox.warning(self, '警告', '请输入版本号！')
+            return
+        
+        if not self.model_file_path:
+            QMessageBox.warning(self, '警告', '请选择模型文件！')
+            return
+        
+        # 检查模型文件是否存在
+        if not Path(self.model_file_path).exists():
+            QMessageBox.warning(self, '警告', '所选模型文件不存在！')
+            return
+        
+        # 解析类别列表
+        classes_text = self.classes_input.text().strip()
+        classes = [c.strip() for c in classes_text.split(',') if c.strip()] if classes_text else None
+        
+        # 获取其他字段
+        author = self.author_input.text().strip() or None
+        description = self.description_input.toPlainText().strip() or None
+        
+        # 注册模型
+        try:
+            success = model_manager.add_model(
+                name=name,
+                version=version,
+                file_path=self.model_file_path,
+                classes=classes,
+                description=description,
+                author=author
+            )
+            
+            if success:
+                self.accept()
+            else:
+                QMessageBox.critical(self, '错误', '模型注册失败！请检查日志获取详细信息。')
+        except Exception as e:
+            QMessageBox.critical(self, '错误', f'模型注册失败：{str(e)}')
+
+
+class ThemeSettingsDialog(QDialog):
+    """主题设置对话框"""
+    
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.selected_theme = 'light'
+        self.init_ui()
+    
+    def init_ui(self):
+        """初始化UI"""
+        self.setWindowTitle('🎨 主题设置')
+        self.setMinimumWidth(400)
+        self.setMinimumHeight(300)
+        
+        layout = QVBoxLayout()
+        
+        # 标题
+        title_label = QLabel('选择主题')
+        title_label.setStyleSheet('font-size: 16px; font-weight: bold; padding: 10px;')
+        layout.addWidget(title_label)
+        
+        # 主题列表
+        self.theme_list = QListWidget()
+        self.theme_list.setStyleSheet('''
+            QListWidget {
+                border: 1px solid #ddd;
+                border-radius: 5px;
+                padding: 5px;
+            }
+            QListWidget::item {
+                padding: 15px;
+                border-radius: 5px;
+                margin: 3px;
+            }
+            QListWidget::item:selected {
+                background-color: #4facfe;
+                color: white;
+            }
+            QListWidget::item:hover {
+                background-color: #e3f2fd;
+            }
+        ''')
+        
+        # 添加主题选项
+        themes = [
+            ('🌞 浅色主题', 'light', '清新明亮，适合白天使用'),
+            ('🌙 深色主题', 'dark', '柔和护眼，适合晚上使用'),
+            ('🌊 海洋主题', 'ocean', '清凉温馨，水下专属主题')
+        ]
+        
+        for icon_name, theme_id, description in themes:
+            item_text = f"{icon_name}\n{description}"
+            self.theme_list.addItem(item_text)
+            self.theme_list.item(self.theme_list.count() - 1).setData(Qt.ItemDataRole.UserRole, theme_id)
+        
+        # 默认选中第一个
+        self.theme_list.setCurrentRow(0)
+        self.theme_list.currentRowChanged.connect(self.on_theme_changed)
+        
+        layout.addWidget(self.theme_list)
+        
+        # 预览提示
+        preview_label = QLabel('👁️ 选择后点击确定即可应用主题')
+        preview_label.setStyleSheet('color: #7f8c8d; font-size: 12px; padding: 10px;')
+        layout.addWidget(preview_label)
+        
+        # 按钮
+        button_box = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
+        )
+        button_box.accepted.connect(self.accept)
+        button_box.rejected.connect(self.reject)
+        layout.addWidget(button_box)
+        
+        self.setLayout(layout)
+    
+    def on_theme_changed(self, index):
+        """主题选择改变"""
+        if index >= 0:
+            item = self.theme_list.item(index)
+            self.selected_theme = item.data(Qt.ItemDataRole.UserRole)
+    
+    def get_selected_theme(self):
+        """获取选中的主题"""
+        return self.selected_theme

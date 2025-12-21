@@ -2,7 +2,7 @@
 REM 水下目标识别系统 - Windows 快速启动脚本
 REM 
 REM 功能：
-REM 1. 检查 Python 环境
+REM 1. 检查并激活虚拟环境
 REM 2. 检查依赖安装
 REM 3. 启动应用程序
 
@@ -11,13 +11,20 @@ echo   水下目标识别系统 启动脚本
 echo ========================================
 echo.
 
-REM 检查 Python
-echo [1/4] 检查 Python 环境...
-python --version >nul 2>&1
-if errorlevel 1 (
-    echo [错误] 未找到 Python，请先安装 Python 3.8+
-    pause
-    exit /b 1
+REM 检查虚拟环境
+echo [1/4] 检查虚拟环境...
+if exist venv\Scripts\activate.bat (
+    echo 找到虚拟环境，正在激活...
+    call venv\Scripts\activate.bat
+    echo 虚拟环境已激活
+) else (
+    echo [警告] 未找到虚拟环境，使用系统 Python
+    python --version >nul 2>&1
+    if errorlevel 1 (
+        echo [错误] 未找到 Python，请先安装 Python 3.8+
+        pause
+        exit /b 1
+    )
 )
 python --version
 echo.
