@@ -157,6 +157,26 @@ class DatabaseService:
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
             """)
             
+            # 反馈表
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS feedbacks (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    user_id INT,
+                    title VARCHAR(255) NOT NULL,
+                    content TEXT NOT NULL,
+                    category VARCHAR(50),
+                    email VARCHAR(100),
+                    status VARCHAR(20) NOT NULL DEFAULT 'pending',
+                    response TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+                    INDEX idx_user_id (user_id),
+                    INDEX idx_status (status),
+                    INDEX idx_created_at (created_at)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+            """)
+
             # 系统日志表
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS system_logs (

@@ -208,7 +208,10 @@ class MainWindow(QMainWindow):
         about_action = help_menu.addAction('ℹ️ 关于系统')
         about_action.triggered.connect(self.show_about)
         help_menu.addAction('📖 使用文档')
-        help_menu.addAction('🐛 问题反馈')
+
+        feedback_action = help_menu.addAction('🐛 问题反馈')
+        feedback_action.triggered.connect(self.open_feedback_dialog)
+
         help_btn.setMenu(help_menu)
         toolbar.addWidget(help_btn)
         
@@ -645,6 +648,12 @@ class MainWindow(QMainWindow):
         self.admin_dashboard = AdminDashboard(self.user_info)
         self.admin_dashboard.show()
     
+    def open_feedback_dialog(self):
+        """打开反馈对话框"""
+        from ui.main.feedback_dialog import FeedbackDialog
+        feedback_dialog = FeedbackDialog(self.user_info, self)
+        feedback_dialog.exec()
+
     def show_about(self):
         """显示关于对话框"""
         QMessageBox.about(self, '关于', 
