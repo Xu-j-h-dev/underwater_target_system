@@ -201,94 +201,142 @@ class AdminDashboard(QMainWindow):
 
     def load_users(self):
         """加载用户列表"""
-        users = auth_service.get_all_users()
-        self.user_table.setRowCount(len(users))
+        try:
+            users = auth_service.get_all_users()
+            self.user_table.setRowCount(len(users))
 
-        for i, user in enumerate(users):
-            self.user_table.setItem(i, 0, QTableWidgetItem(str(user['id'])))
-            self.user_table.setItem(i, 1, QTableWidgetItem(user['username']))
-            self.user_table.setItem(i, 2, QTableWidgetItem(user.get('email', '')))
-            self.user_table.setItem(i, 3, QTableWidgetItem(user['role']))
-            self.user_table.setItem(i, 4, QTableWidgetItem(user['status']))
-            self.user_table.setItem(i, 5, QTableWidgetItem(str(user['created_at'])))
+            for i, user in enumerate(users):
+                self.user_table.setItem(i, 0, QTableWidgetItem(str(user['id'])))
+                self.user_table.setItem(i, 1, QTableWidgetItem(user['username']))
+                self.user_table.setItem(i, 2, QTableWidgetItem(user.get('email', '')))
+                self.user_table.setItem(i, 3, QTableWidgetItem(user['role']))
+                self.user_table.setItem(i, 4, QTableWidgetItem(user['status']))
+                self.user_table.setItem(i, 5, QTableWidgetItem(str(user['created_at'])))
 
-            # 操作按钮
-            action_widget = QWidget()
-            action_layout = QHBoxLayout()
-            action_layout.setContentsMargins(5, 2, 5, 2)
+                # 操作按钮
+                action_widget = QWidget()
+                action_layout = QHBoxLayout()
+                action_layout.setContentsMargins(5, 2, 5, 2)
 
-            edit_btn = QPushButton('编辑')
-            edit_btn.clicked.connect(lambda checked, uid=user['id']: self.edit_user(uid))
-            action_layout.addWidget(edit_btn)
+                edit_btn = QPushButton('编辑')
+                edit_btn.clicked.connect(lambda checked, uid=user['id']: self.edit_user(uid))
+                action_layout.addWidget(edit_btn)
 
-            delete_btn = QPushButton('删除')
-            delete_btn.clicked.connect(lambda checked, uid=user['id']: self.delete_user(uid))
-            action_layout.addWidget(delete_btn)
+                delete_btn = QPushButton('删除')
+                delete_btn.clicked.connect(lambda checked, uid=user['id']: self.delete_user(uid))
+                action_layout.addWidget(delete_btn)
 
-            action_widget.setLayout(action_layout)
-            self.user_table.setCellWidget(i, 6, action_widget)
+                action_widget.setLayout(action_layout)
+                self.user_table.setCellWidget(i, 6, action_widget)
+        except Exception as e:
+            from utils import system_logger
+            system_logger.error(f"加载用户数据失败: {str(e)}")
+            QMessageBox.warning(self, "错误", f"加载用户数据失败: {str(e)}")
 
     def load_models(self):
         """加载模型列表"""
-        models = model_manager.get_all_models()
-        self.model_table.setRowCount(len(models))
+        try:
+            models = model_manager.get_all_models()
+            self.model_table.setRowCount(len(models))
 
-        for i, model in enumerate(models):
-            self.model_table.setItem(i, 0, QTableWidgetItem(str(model['id'])))
-            self.model_table.setItem(i, 1, QTableWidgetItem(model['name']))
-            self.model_table.setItem(i, 2, QTableWidgetItem(model['version']))
-            self.model_table.setItem(i, 3, QTableWidgetItem(model.get('author', '')))
-            self.model_table.setItem(i, 4, QTableWidgetItem(str(model['created_at'])))
-            self.model_table.setItem(i, 5, QTableWidgetItem(model.get('description', '')[:50]))
+            for i, model in enumerate(models):
+                self.model_table.setItem(i, 0, QTableWidgetItem(str(model['id'])))
+                self.model_table.setItem(i, 1, QTableWidgetItem(model['name']))
+                self.model_table.setItem(i, 2, QTableWidgetItem(model['version']))
+                self.model_table.setItem(i, 3, QTableWidgetItem(model.get('author', '')))
+                self.model_table.setItem(i, 4, QTableWidgetItem(str(model['created_at'])))
+                self.model_table.setItem(i, 5, QTableWidgetItem(model.get('description', '')[:50]))
 
-            # 操作按钮
-            action_widget = QWidget()
-            action_layout = QHBoxLayout()
-            action_layout.setContentsMargins(5, 2, 5, 2)
+                # 操作按钮
+                action_widget = QWidget()
+                action_layout = QHBoxLayout()
+                action_layout.setContentsMargins(5, 2, 5, 2)
 
-            view_btn = QPushButton('查看')
-            view_btn.clicked.connect(lambda checked, mid=model['id']: self.view_model(mid))
-            action_layout.addWidget(view_btn)
+                view_btn = QPushButton('查看')
+                view_btn.clicked.connect(lambda checked, mid=model['id']: self.view_model(mid))
+                action_layout.addWidget(view_btn)
 
-            delete_btn = QPushButton('删除')
-            delete_btn.clicked.connect(lambda checked, mid=model['id']: self.delete_model(mid))
-            action_layout.addWidget(delete_btn)
+                delete_btn = QPushButton('删除')
+                delete_btn.clicked.connect(lambda checked, mid=model['id']: self.delete_model(mid))
+                action_layout.addWidget(delete_btn)
 
-            action_widget.setLayout(action_layout)
-            self.model_table.setCellWidget(i, 6, action_widget)
+                action_widget.setLayout(action_layout)
+                self.model_table.setCellWidget(i, 6, action_widget)
+        except Exception as e:
+            from utils import system_logger
+            system_logger.error(f"加载模型数据失败: {str(e)}")
+            QMessageBox.warning(self, "错误", f"加载模型数据失败: {str(e)}")
 
     def load_logs(self):
         """加载日志"""
-        log_type = self.log_type_combo.currentText()
+        try:
+            log_type = self.log_type_combo.currentText()
 
-        if log_type == '登录日志':
-            logs = auth_service.get_login_logs()
-            self.log_table.setColumnCount(5)
-            self.log_table.setHorizontalHeaderLabels(['ID', '用户名', '登录时间', 'IP地址', '状态'])
-            self.log_table.setRowCount(len(logs))
+            # 清空表格
+            self.log_table.clearContents()
+            self.log_table.setRowCount(0)
 
-            for i, log in enumerate(logs):
-                self.log_table.setItem(i, 0, QTableWidgetItem(str(log['id'])))
-                self.log_table.setItem(i, 1, QTableWidgetItem(log['username']))
-                self.log_table.setItem(i, 2, QTableWidgetItem(str(log['login_time'])))
-                self.log_table.setItem(i, 3, QTableWidgetItem(log.get('ip_address', '')))
-                self.log_table.setItem(i, 4, QTableWidgetItem(log['status']))
+            if log_type == '登录日志':
+                logs = auth_service.get_login_logs()
+                self.log_table.setColumnCount(5)
+                self.log_table.setHorizontalHeaderLabels(['ID', '用户名', '登录时间', 'IP地址', '状态'])
+                self.log_table.setRowCount(len(logs))
 
-        elif log_type == '推理日志':
-            logs = db_service.execute_query("SELECT * FROM inference_logs ORDER BY created_at DESC LIMIT 100")
-            self.log_table.setColumnCount(6)
-            self.log_table.setHorizontalHeaderLabels(['ID', '用户ID', '模型', '数据源', '检测数', '推理时间'])
-            self.log_table.setRowCount(len(logs))
+                for i, log in enumerate(logs):
+                    self.log_table.setItem(i, 0, QTableWidgetItem(str(log['id'])))
+                    self.log_table.setItem(i, 1, QTableWidgetItem(log['username']))
+                    self.log_table.setItem(i, 2, QTableWidgetItem(str(log['login_time'])))
+                    self.log_table.setItem(i, 3, QTableWidgetItem(log.get('ip_address', '')))
+                    self.log_table.setItem(i, 4, QTableWidgetItem(log['status']))
 
-            for i, log in enumerate(logs):
-                self.log_table.setItem(i, 0, QTableWidgetItem(str(log['id'])))
-                self.log_table.setItem(i, 1, QTableWidgetItem(str(log['user_id'])))
-                self.log_table.setItem(i, 2, QTableWidgetItem(log.get('model_name', '')))
-                self.log_table.setItem(i, 3, QTableWidgetItem(log.get('source_type', '')))
-                self.log_table.setItem(i, 4, QTableWidgetItem(str(log.get('detections', 0))))
-                self.log_table.setItem(i, 5, QTableWidgetItem(f"{log.get('inference_time', 0):.3f}s"))
+            elif log_type == '推理日志':
+                logs = db_service.execute_query("SELECT * FROM inference_logs ORDER BY created_at DESC LIMIT 100")
+                self.log_table.setColumnCount(6)
+                self.log_table.setHorizontalHeaderLabels(['ID', '用户ID', '模型', '数据源', '检测数', '推理时间'])
+                self.log_table.setRowCount(len(logs))
 
-        self.log_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+                for i, log in enumerate(logs):
+                    self.log_table.setItem(i, 0, QTableWidgetItem(str(log['id'])))
+                    self.log_table.setItem(i, 1, QTableWidgetItem(str(log['user_id'])))
+                    self.log_table.setItem(i, 2, QTableWidgetItem(log.get('model_name', '')))
+                    self.log_table.setItem(i, 3, QTableWidgetItem(log.get('source_type', '')))
+                    self.log_table.setItem(i, 4, QTableWidgetItem(str(log.get('detections', 0))))
+                    self.log_table.setItem(i, 5, QTableWidgetItem(f"{log.get('inference_time', 0):.3f}s"))
+
+            elif log_type == '训练日志':
+                logs = db_service.execute_query("SELECT * FROM training_logs ORDER BY start_time DESC LIMIT 100")
+                self.log_table.setColumnCount(7)
+                self.log_table.setHorizontalHeaderLabels(['ID', '用户ID', '模型', '数据集', '状态', '开始时间', '最终mAP'])
+                self.log_table.setRowCount(len(logs))
+
+                for i, log in enumerate(logs):
+                    self.log_table.setItem(i, 0, QTableWidgetItem(str(log['id'])))
+                    self.log_table.setItem(i, 1, QTableWidgetItem(str(log['user_id'])))
+                    self.log_table.setItem(i, 2, QTableWidgetItem(log.get('model_name', '')))
+                    self.log_table.setItem(i, 3, QTableWidgetItem(log.get('dataset_path', '')))
+                    self.log_table.setItem(i, 4, QTableWidgetItem(log.get('status', '')))
+                    self.log_table.setItem(i, 5, QTableWidgetItem(str(log['start_time'])))
+                    self.log_table.setItem(i, 6, QTableWidgetItem(str(log.get('final_map', 'N/A'))))
+
+            elif log_type == '系统日志':
+                logs = db_service.execute_query("SELECT * FROM system_logs ORDER BY created_at DESC LIMIT 100")
+                self.log_table.setColumnCount(5)
+                self.log_table.setHorizontalHeaderLabels(['ID', '级别', '模块', '消息', '时间'])
+                self.log_table.setRowCount(len(logs))
+
+                for i, log in enumerate(logs):
+                    self.log_table.setItem(i, 0, QTableWidgetItem(str(log['id'])))
+                    self.log_table.setItem(i, 1, QTableWidgetItem(log.get('level', '')))
+                    self.log_table.setItem(i, 2, QTableWidgetItem(log.get('module', '')))
+                    self.log_table.setItem(i, 3, QTableWidgetItem(log.get('message', '')))
+                    self.log_table.setItem(i, 4, QTableWidgetItem(str(log['created_at'])))
+
+            self.log_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+
+        except Exception as e:
+            from utils import system_logger
+            system_logger.error(f"加载日志失败: {str(e)}")
+            QMessageBox.warning(self, "错误", f"加载日志失败: {str(e)}")
 
     def add_user_dialog(self):
         """添加用户对话框"""
