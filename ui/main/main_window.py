@@ -212,6 +212,9 @@ class MainWindow(QMainWindow):
         feedback_action = help_menu.addAction('🐛 问题反馈')
         feedback_action.triggered.connect(self.open_feedback_dialog)
 
+        my_feedback_action = help_menu.addAction('💬 我的反馈')
+        my_feedback_action.triggered.connect(self.open_my_feedback_dialog)
+
         help_btn.setMenu(help_menu)
         toolbar.addWidget(help_btn)
         
@@ -652,6 +655,12 @@ class MainWindow(QMainWindow):
         """打开反馈对话框"""
         from ui.main.feedback_dialog import FeedbackDialog
         feedback_dialog = FeedbackDialog(self.user_info, self)
+        feedback_dialog.exec()
+
+    def open_my_feedback_dialog(self):
+        """打开我的反馈对话框"""
+        from ui.main.my_feedback_dialog import MyFeedbackDialog
+        feedback_dialog = MyFeedbackDialog(self.user_info, self)
         feedback_dialog.exec()
 
     def show_about(self):
