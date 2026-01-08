@@ -48,6 +48,25 @@ class InferenceEngine:
             if model_path_obj.suffix not in ['.pt', '.pth']:
                 inference_logger.warning(f"模型文件扩展名不常见: {model_path_obj.suffix}")
             
+            # 验证模型文件格式
+            try:
+                import torch
+                ckpt = torch.load(model_path, map_location='cpu', weights_only=False)
+                
+                # 检查是否是有效的YOLO模型
+                if not isinstance(ckpt, dict) or ('model' not in ckpt and 'ema' not in ckpt):
+                    inference_logger.error(
+                        f"无效的YOLO模型文件: {model_path}\n"
+                        f"该文件不包含必需的 'model' 或 'ema' 键。\n"
+                        f"实际包含的键: {list(ckpt.keys()) if isinstance(ckpt, dict) else 'Not a dict'}\n"
+                        f"这可能不是一个YOLOv11训练的模型文件。"
+                    )
+                    return False
+                    
+            except Exception as e:
+                inference_logger.error(f"模型文件格式验证失败: {str(e)}")
+                return False
+            
             inference_logger.info(f"开始加载模型: {model_path}")
             inference_logger.info(f"使用设备: {self.device}")
             

@@ -21,27 +21,69 @@ class InferenceThread(QThread):
     frame_ready = pyqtSignal(np.ndarray, list, float)
     finished = pyqtSignal()
     
-    def __init__(self, source_type, source, inference_engine):
+    def __init__(self, source_type, source, inference_engine, user_info=None, model_name=None):
         super().__init__()
         self.source_type = source_type
         self.source = source
         self.engine = inference_engine
+        self.user_info = user_info
+        self.model_name = model_name
         self.running = True
+        
+        # 统计信息
+        self.total_frames = 0
+        self.total_detections = 0
+        self.start_time = None
     
     def run(self):
         """执行推理"""
+        import time
+        self.start_time = time.time()
+        
         if self.source_type == 'camera':
             self.engine.predict_camera(self.source, self.callback)
         elif self.source_type == 'video':
             self.engine.predict_video(self.source, callback=self.callback)
+        
+        # 记录日志
+        self.log_inference_result()
+        
         self.finished.emit()
     
     def callback(self, frame, detections, fps):
         """回调函数"""
         if self.running:
+            self.total_frames += 1
+            self.total_detections += len(detections)
             self.frame_ready.emit(frame, detections, fps)
             return True
         return False
+    
+    def log_inference_result(self):
+        """记录推理结果到数据库"""
+        try:
+            if not self.user_info or not self.model_name:
+                return
+            
+            import time
+            total_time = time.time() - self.start_time if self.start_time else 0
+            
+            # 计算平均检测数
+            avg_detections = int(self.total_detections / self.total_frames) if self.total_frames > 0 else 0
+            
+            source_path = str(self.source) if not isinstance(self.source, int) else f'camera_{self.source}'
+            
+            self.engine.log_inference(
+                user_id=self.user_info['id'],
+                model_name=self.model_name,
+                source_type=self.source_type,
+                source_path=source_path,
+                detections=avg_detections,
+                inference_time=total_time
+            )
+        except Exception as e:
+            from utils import system_logger
+            system_logger.error(f"记录推理日志失败: {str(e)}")
     
     def stop(self):
         """停止推理"""
@@ -544,7 +586,14 @@ class MainWindow(QMainWindow):
                 QMessageBox.critical(
                     self, 
                     '错误', 
-                    f'模型加载失败！\n\n请查看日志文件获取详细信息。\n模型路径：{model_path}'
+                    f'模型加载失败！\n\n'
+                    f'可能原因：\n'
+                    f'1. 模型文件格式不正确（不是YOLOv11模型）\n'
+                    f'2. 模型文件已损坏\n'
+                    f'3. 模型版本不兼容\n\n'
+                    f'请查看日志文件获取详细信息。\n'
+                    f'模型路径：{model_path}\n\n'
+                    f'建议：如果该模型无法使用，请在模型仓库中删除它。'
                 )
         except Exception as e:
             QMessageBox.critical(self, '错误', f'加载模型时出错：\n{str(e)}')
@@ -580,9 +629,16 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, '警告', '请先加载模型')
             return
         
+        # 获取当前模型名称
+        model_name = self.model_combo.currentText() if self.current_model else '未知模型'
+        
         if self.camera_radio.isChecked():
             # 摄像头检测
-            self.inference_thread = InferenceThread('camera', 0, inference_engine)
+            self.inference_thread = InferenceThread(
+                'camera', 0, inference_engine,
+                user_info=self.user_info,
+                model_name=model_name
+            )
             self.inference_thread.frame_ready.connect(self.update_frame)
             self.inference_thread.finished.connect(self.detection_finished)
             self.inference_thread.start()
@@ -605,7 +661,11 @@ class MainWindow(QMainWindow):
                 QMessageBox.warning(self, '警告', '请先选择视频')
                 return
             
-            self.inference_thread = InferenceThread('video', file_path, inference_engine)
+            self.inference_thread = InferenceThread(
+                'video', file_path, inference_engine,
+                user_info=self.user_info,
+                model_name=model_name
+            )
             self.inference_thread.frame_ready.connect(self.update_frame)
             self.inference_thread.finished.connect(self.detection_finished)
             self.inference_thread.start()
@@ -619,8 +679,12 @@ class MainWindow(QMainWindow):
             self.inference_thread.stop()
             self.inference_thread.wait()
         
+        # 更新按钮状态
         self.start_btn.setEnabled(True)
         self.stop_btn.setEnabled(False)
+        
+        # 显示停止反馈
+        self.show_stop_feedback()
     
     def update_frame(self, frame, detections, fps):
         """更新帧显示"""
@@ -670,11 +734,107 @@ class MainWindow(QMainWindow):
         result_text = '\n'.join([f"{det['class_name']}: {det['confidence']:.2f}" 
                                 for det in result['detections']])
         self.result_text.setText(result_text)
+        
+        # 记录推理日志到数据库
+        try:
+            file_path = self.file_path_label.property('full_path')
+            source_path = file_path if file_path else '未知'
+            
+            # 获取当前模型名称
+            model_name = self.model_combo.currentText() if self.current_model else '未知模型'
+            
+            inference_engine.log_inference(
+                user_id=self.user_info['id'],
+                model_name=model_name,
+                source_type='image',
+                source_path=source_path,
+                detections=len(result['detections']),
+                inference_time=result['inference_time']
+            )
+        except Exception as e:
+            from utils import system_logger
+            system_logger.error(f"记录推理日志失败: {str(e)}")
     
     def detection_finished(self):
         """检测完成"""
         self.start_btn.setEnabled(True)
         self.stop_btn.setEnabled(False)
+    
+    def show_stop_feedback(self):
+        """显示停止检测的反馈"""
+        # 更新统计信息
+        self.fps_label.setText('FPS: 0.0 (已停止)')
+        
+        # 在结果区域显示停止信息
+        if self.current_detections:
+            stop_info = f"\n{'='*30}\n"
+            stop_info += "⚠️ 检测已停止\n"
+            stop_info += f"{'='*30}\n\n"
+            stop_info += f"最后检测结果：\n"
+            stop_info += f"检测数量：{len(self.current_detections)} 个目标\n\n"
+            stop_info += '\n'.join([f"{i+1}. {det['class_name']}: {det['confidence']:.2f}" 
+                                   for i, det in enumerate(self.current_detections)])
+            self.result_text.setText(stop_info)
+        else:
+            self.result_text.setText(
+                "\n" + "="*30 + "\n"
+                "⚠️ 检测已停止\n" +
+                "="*30 + "\n\n"
+                "请点击 '▶ 开始检测' 重新开始。"
+            )
+        
+        # 如果有图像，在图像上显示停止标记
+        if self.current_result_image is not None:
+            # 复制图像避免修改原图
+            display_image = self.current_result_image.copy()
+            
+            # 在图像上添加停止标记
+            height, width = display_image.shape[:2]
+            
+            # 添加半透明遮罩
+            overlay = display_image.copy()
+            cv2.rectangle(overlay, (0, 0), (width, 80), (0, 0, 0), -1)
+            cv2.addWeighted(overlay, 0.5, display_image, 0.5, 0, display_image)
+            
+            # 添加文字
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            text = "STOPPED"
+            font_scale = 2.0
+            thickness = 3
+            
+            # 获取文字大小
+            (text_width, text_height), _ = cv2.getTextSize(text, font, font_scale, thickness)
+            
+            # 居中显示
+            text_x = (width - text_width) // 2
+            text_y = 50
+            
+            # 添加红色文字
+            cv2.putText(display_image, text, (text_x, text_y), 
+                       font, font_scale, (0, 0, 255), thickness, cv2.LINE_AA)
+            
+            # 显示图像
+            height, width, channel = display_image.shape
+            bytes_per_line = 3 * width
+            q_image = QImage(display_image.data, width, height, bytes_per_line, 
+                           QImage.Format.Format_RGB888).rgbSwapped()
+            
+            pixmap = QPixmap.fromImage(q_image)
+            scaled_pixmap = pixmap.scaled(self.image_label.size(), 
+                                         Qt.AspectRatioMode.KeepAspectRatio)
+            self.image_label.setPixmap(scaled_pixmap)
+        else:
+            # 如果没有图像，显示停止提示
+            self.image_label.setText(
+                '⚠️ 检测已停止\n\n'
+                '请选择数据源并点击 "▶ 开始检测" 重新开始'
+            )
+            self.image_label.setStyleSheet(
+                'background-color: #2c3e50; '
+                'color: #e74c3c; '
+                'font-size: 20px; '
+                'font-weight: bold;'
+            )
     
     def save_result(self):
         """保存结果"""
