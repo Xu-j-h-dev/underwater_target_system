@@ -13,7 +13,7 @@ DATABASE_CONFIG = {
     'host': 'localhost',
     'port': 3306,
     'user': 'root',
-    'password': '123456',  # 请修改为实际密码
+    'password': '051128',  # 请修改为实际密码
     'database': 'underwater_detection',
     'charset': 'utf8mb4'
 }

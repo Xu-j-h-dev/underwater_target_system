@@ -34,16 +34,42 @@ class InferenceEngine:
             bool: 是否加载成功
         """
         try:
-            if not Path(model_path).exists():
+            # 检查路径
+            if not model_path:
+                inference_logger.error("模型路径为空")
+                return False
+            
+            model_path_obj = Path(model_path)
+            if not model_path_obj.exists():
                 inference_logger.error(f"模型文件不存在: {model_path}")
                 return False
             
+            # 检查文件扩展名
+            if model_path_obj.suffix not in ['.pt', '.pth']:
+                inference_logger.warning(f"模型文件扩展名不常见: {model_path_obj.suffix}")
+            
+            inference_logger.info(f"开始加载模型: {model_path}")
+            inference_logger.info(f"使用设备: {self.device}")
+            
+            # 加载模型
             self.model = YOLO(model_path)
             self.current_model_path = model_path
+            
             inference_logger.info(f"模型加载成功: {model_path}")
+            inference_logger.info(f"模型类型: {type(self.model)}")
+            
+            # 尝试获取模型信息
+            try:
+                if hasattr(self.model, 'names'):
+                    inference_logger.info(f"模型类别: {self.model.names}")
+            except:
+                pass
+            
             return True
+            
         except Exception as e:
             inference_logger.error(f"模型加载失败: {str(e)}")
+            inference_logger.exception("详细错误信息:")
             return False
     
     def set_parameters(self, conf_threshold: float = None, iou_threshold: float = None):

@@ -243,9 +243,10 @@ class AdminDashboard(QMainWindow):
                 self.model_table.setItem(i, 0, QTableWidgetItem(str(model['id'])))
                 self.model_table.setItem(i, 1, QTableWidgetItem(model['name']))
                 self.model_table.setItem(i, 2, QTableWidgetItem(model['version']))
-                self.model_table.setItem(i, 3, QTableWidgetItem(model.get('author', '')))
+                self.model_table.setItem(i, 3, QTableWidgetItem(model.get('author') or ''))
                 self.model_table.setItem(i, 4, QTableWidgetItem(str(model['created_at'])))
-                self.model_table.setItem(i, 5, QTableWidgetItem(model.get('description', '')[:50]))
+                description = model.get('description') or ''
+                self.model_table.setItem(i, 5, QTableWidgetItem(description[:50]))
 
                 # 操作按钮
                 action_widget = QWidget()
