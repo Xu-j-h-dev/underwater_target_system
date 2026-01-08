@@ -190,6 +190,8 @@ class MainWindow(QMainWindow):
         tools_menu = QMenu()
         train_action = tools_menu.addAction('🎓 模型训练')
         train_action.triggered.connect(self.open_training_window)
+        augment_action = tools_menu.addAction('🎨 数据增强')
+        augment_action.triggered.connect(self.open_data_augmentation_window)
         tools_menu.addAction('📦 模型仓库')
         register_action = tools_menu.addAction('➕ 注册模型')
         register_action.triggered.connect(self.register_model)
@@ -644,6 +646,12 @@ class MainWindow(QMainWindow):
         from ui.training import TrainingWindow
         self.training_window = TrainingWindow(self.user_info)
         self.training_window.show()
+    
+    def open_data_augmentation_window(self):
+        """打开数据增强窗口"""
+        from ui.training.data_augmentation_window import DataAugmentationWindow
+        self.data_augmentation_window = DataAugmentationWindow(self)
+        self.data_augmentation_window.show()
     
     def open_admin_dashboard(self):
         """打开管理员仪表盘"""

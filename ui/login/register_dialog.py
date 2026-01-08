@@ -15,148 +15,164 @@ class RegisterDialog(QDialog):
     
     def init_ui(self):
         """初始化UI"""
-        self.setWindowTitle('用户注册')
-        self.setFixedSize(420, 520)
+        self.setWindowTitle('新用户注册')
+        self.setFixedSize(450, 750)
         self.setModal(True)
         
         # 设置样式
         self.setStyleSheet("""
             QDialog {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #4facfe, stop:0.5 #00f2fe, stop:1 #667eea);
+                background-color: #1e1e1e;
             }
             QLabel {
-                color: white;
+                color: #e0e0e0;
                 font-size: 13px;
                 font-weight: 500;
                 background: transparent;
             }
             QLabel#field_label {
-                font-size: 14px;
-                color: white;
+                font-size: 13px;
+                color: #ffffff;
                 font-weight: 600;
                 margin-bottom: 5px;
             }
             QLabel#header {
-                font-size: 24px;
+                font-size: 28px;
                 font-weight: bold;
-                color: white;
+                color: #ffffff;
+                letter-spacing: 2px;
             }
             QLineEdit {
-                padding: 14px 18px;
-                border: 2px solid rgba(255, 255, 255, 0.4);
-                border-radius: 10px;
-                font-size: 15px;
-                background-color: rgba(255, 255, 255, 0.95);
-                color: #2c3e50;
+                padding: 14px 16px;
+                border: 2px solid #3a3a3a;
+                border-radius: 8px;
+                font-size: 14px;
+                background-color: #2d2d2d;
+                color: #ffffff;
                 min-height: 20px;
             }
             QLineEdit:focus {
-                border: 2px solid white;
-                background-color: white;
+                border: 2px solid #3498db;
+                background-color: #353535;
             }
             QLineEdit::placeholder {
-                color: #95a5a6;
+                color: #666666;
             }
             QPushButton {
                 padding: 14px;
                 font-size: 14px;
                 font-weight: bold;
-                border-radius: 10px;
+                border-radius: 8px;
                 border: none;
                 min-height: 20px;
             }
             QPushButton#register_btn {
-                background-color: white;
-                color: #4facfe;
+                background-color: #3498db;
+                color: white;
             }
             QPushButton#register_btn:hover {
-                background-color: #f0f8ff;
-                color: #00f2fe;
-                border: 2px solid white;
+                background-color: #2980b9;
             }
             QPushButton#cancel_btn {
                 background-color: transparent;
-                border: 2px solid rgba(255, 255, 255, 0.8);
-                color: white;
+                border: 2px solid #3498db;
+                color: #3498db;
             }
             QPushButton#cancel_btn:hover {
-                background-color: rgba(255, 255, 255, 0.15);
-                border: 2px solid white;
+                background-color: #2d3e50;
+                border: 2px solid #2980b9;
+                color: #5dade2;
             }
         """)
         
         layout = QVBoxLayout()
-        layout.setSpacing(12)
-        layout.setContentsMargins(40, 40, 40, 40)
+        layout.setSpacing(0)
+        layout.setContentsMargins(45, 50, 45, 45)
         
         # 头部区域
         header_layout = QVBoxLayout()
-        header_layout.setSpacing(5)
+        header_layout.setSpacing(0)
         
         icon_label = QLabel('✨')
         icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        icon_label.setStyleSheet('font-size: 40px; margin: 10px;')
+        icon_label.setStyleSheet('font-size: 60px; margin: 0px;')
         header_layout.addWidget(icon_label)
         
-        title_label = QLabel('创建新账号')
+        header_layout.addSpacing(15)
+        
+        title_label = QLabel('注册新账号')
         title_label.setObjectName('header')
         title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        from PyQt6.QtGui import QFont
+        font = QFont()
+        font.setPointSize(14)
+        font.setBold(True)
+        title_label.setFont(font)
         header_layout.addWidget(title_label)
+        
+        header_layout.addSpacing(8)
         
         subtitle_label = QLabel('加入水下目标识别系统')
         subtitle_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        subtitle_label.setStyleSheet('color: rgba(255, 255, 255, 0.8); font-size: 12px;')
+        subtitle_label.setStyleSheet('color: #a0a0a0; font-size: 12px;')
         header_layout.addWidget(subtitle_label)
         
         layout.addLayout(header_layout)
-        layout.addSpacing(20)
+        layout.addSpacing(30)
         
         # 用户名
         username_label = QLabel('👤 用户名')
         username_label.setObjectName('field_label')
         layout.addWidget(username_label)
-        self.username_input = QLineEdit()
-        self.username_input.setPlaceholderText('请设置您的用户名')
-        self.username_input.setMinimumHeight(48)
-        layout.addWidget(self.username_input)
         
         layout.addSpacing(8)
+        
+        self.username_input = QLineEdit()
+        self.username_input.setPlaceholderText('请设置您的用户名')
+        layout.addWidget(self.username_input)
+        
+        layout.addSpacing(18)
         
         # 密码
         password_label = QLabel('🔒 密码')
         password_label.setObjectName('field_label')
         layout.addWidget(password_label)
+        
+        layout.addSpacing(8)
+        
         self.password_input = QLineEdit()
         self.password_input.setPlaceholderText('请设置密码（至少6位）')
         self.password_input.setEchoMode(QLineEdit.EchoMode.Password)
-        self.password_input.setMinimumHeight(48)
         layout.addWidget(self.password_input)
         
-        layout.addSpacing(8)
+        layout.addSpacing(18)
         
         # 确认密码
         confirm_label = QLabel('🔓 确认密码')
         confirm_label.setObjectName('field_label')
         layout.addWidget(confirm_label)
+        
+        layout.addSpacing(8)
+        
         self.confirm_password_input = QLineEdit()
         self.confirm_password_input.setPlaceholderText('请再次输入密码')
         self.confirm_password_input.setEchoMode(QLineEdit.EchoMode.Password)
-        self.confirm_password_input.setMinimumHeight(48)
         layout.addWidget(self.confirm_password_input)
         
-        layout.addSpacing(8)
+        layout.addSpacing(18)
         
         # 邮箱
         email_label = QLabel('📧 邮箱（可选）')
         email_label.setObjectName('field_label')
         layout.addWidget(email_label)
+        
+        layout.addSpacing(8)
+        
         self.email_input = QLineEdit()
         self.email_input.setPlaceholderText('请输入您的邮箱地址')
-        self.email_input.setMinimumHeight(48)
         layout.addWidget(self.email_input)
         
-        layout.addSpacing(15)
+        layout.addSpacing(25)
         
         # 按钮
         button_layout = QHBoxLayout()

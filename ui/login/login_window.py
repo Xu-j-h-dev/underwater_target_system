@@ -21,89 +21,100 @@ class LoginWindow(QWidget):
     def init_ui(self):
         """初始化UI"""
         self.setWindowTitle('水下目标识别系统 - 登录')
-        self.setFixedSize(450, 580)
+        self.setFixedSize(500, 780)
         self.setStyleSheet("""
             QWidget {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #4facfe, stop:0.5 #00f2fe, stop:1 #667eea);
+                background-color: #1e1e1e;
             }
             QLabel#title {
-                font-size: 28px;
+                font-size: 32px;
                 font-weight: bold;
-                color: white;
-                letter-spacing: 2px;
+                color: #ffffff;
+                letter-spacing: 1px;
             }
             QLabel#subtitle {
-                color: rgba(255, 255, 255, 0.9);
-                font-size: 12px;
+                color: #a0a0a0;
+                font-size: 13px;
             }
             QLabel {
                 font-size: 13px;
-                color: white;
-                font-weight: 500;
+                color: #e0e0e0;
                 background: transparent;
             }
             QLabel#field_label {
-                font-size: 14px;
-                color: white;
+                font-size: 13px;
+                color: #ffffff;
                 font-weight: 600;
                 margin-bottom: 5px;
             }
+            QLabel#info_label {
+                color: #888888;
+                font-size: 11px;
+            }
             QLineEdit {
-                padding: 14px 18px;
-                border: 2px solid rgba(255, 255, 255, 0.4);
-                border-radius: 10px;
-                font-size: 15px;
-                background-color: rgba(255, 255, 255, 0.95);
-                color: #2c3e50;
+                padding: 14px 16px;
+                border: 2px solid #3a3a3a;
+                border-radius: 8px;
+                font-size: 14px;
+                background-color: #2d2d2d;
+                color: #ffffff;
                 min-height: 20px;
             }
             QLineEdit:focus {
-                border: 2px solid #ffffff;
-                background-color: white;
+                border: 2px solid #3498db;
+                background-color: #353535;
             }
             QLineEdit::placeholder {
-                color: #95a5a6;
+                color: #666666;
             }
             QPushButton {
                 padding: 14px;
                 font-size: 15px;
                 font-weight: bold;
-                border-radius: 10px;
-                background-color: white;
-                color: #4facfe;
+                border-radius: 8px;
+                background-color: #3498db;
+                color: white;
                 border: none;
                 min-height: 20px;
             }
             QPushButton:hover {
-                background-color: #f0f8ff;
-                color: #00f2fe;
-                border: 2px solid white;
+                background-color: #2980b9;
             }
             QPushButton:pressed {
-                background-color: rgba(255, 255, 255, 0.8);
+                background-color: #21618c;
             }
             QPushButton#register_btn {
                 background-color: transparent;
-                border: 2px solid rgba(255, 255, 255, 0.8);
-                color: white;
+                border: 2px solid #3498db;
+                color: #3498db;
             }
             QPushButton#register_btn:hover {
-                background-color: rgba(255, 255, 255, 0.15);
-                border: 2px solid white;
+                background-color: #2d3e50;
+                border: 2px solid #2980b9;
+                color: #5dade2;
+            }
+            QFrame#login_card {
+                background-color: #252525;
+                border-radius: 12px;
+                border: 1px solid #3a3a3a;
             }
         """)
         
         # 主布局
         main_layout = QVBoxLayout()
-        main_layout.setContentsMargins(50, 50, 50, 50)
-        main_layout.setSpacing(15)
+        main_layout.setContentsMargins(40, 35, 40, 35)
+        main_layout.setSpacing(0)
         
-        # 顶部图标区域
+        # 顶部空白
+        main_layout.addSpacing(25)
+        
+        # 图标
         icon_label = QLabel('🌊')
         icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        icon_label.setStyleSheet('font-size: 48px; margin: 10px;')
+        icon_label.setStyleSheet('font-size: 60px; margin: 0px; background: transparent;')
         main_layout.addWidget(icon_label)
+        
+        main_layout.addSpacing(15)
         
         # 标题
         title_label = QLabel('水下目标识别系统')
@@ -111,68 +122,85 @@ class LoginWindow(QWidget):
         title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         main_layout.addWidget(title_label)
         
+        main_layout.addSpacing(8)
+        
         # 副标题
         subtitle = QLabel('Underwater Target Detection System')
         subtitle.setObjectName('subtitle')
         subtitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
         main_layout.addWidget(subtitle)
         
-        main_layout.addSpacing(30)
+        main_layout.addSpacing(35)
+        
+        # 登录卡片
+        from PyQt6.QtWidgets import QFrame
+        login_card = QFrame()
+        login_card.setObjectName('login_card')
+        card_layout = QVBoxLayout()
+        card_layout.setContentsMargins(40, 40, 40, 40)
+        card_layout.setSpacing(0)
         
         # 用户名输入框
         username_label = QLabel('👤 用户名')
         username_label.setObjectName('field_label')
-        main_layout.addWidget(username_label)
+        card_layout.addWidget(username_label)
+        
+        card_layout.addSpacing(8)
         
         self.username_input = QLineEdit()
-        self.username_input.setPlaceholderText('请输入您的用户名')
-        self.username_input.setMinimumHeight(48)
-        main_layout.addWidget(self.username_input)
+        self.username_input.setPlaceholderText('请输入用户名')
+        card_layout.addWidget(self.username_input)
         
-        main_layout.addSpacing(10)
+        card_layout.addSpacing(28)
         
         # 密码输入框
         password_label = QLabel('🔒 密码')
         password_label.setObjectName('field_label')
-        main_layout.addWidget(password_label)
+        card_layout.addWidget(password_label)
+        
+        card_layout.addSpacing(8)
         
         self.password_input = QLineEdit()
-        self.password_input.setPlaceholderText('请输入您的密码')
+        self.password_input.setPlaceholderText('请输入密码')
         self.password_input.setEchoMode(QLineEdit.EchoMode.Password)
-        self.password_input.setMinimumHeight(48)
-        main_layout.addWidget(self.password_input)
+        card_layout.addWidget(self.password_input)
         
         # 提示信息
-        main_layout.addSpacing(5)
+        card_layout.addSpacing(20)
         self.info_label = QLabel('💡 默认账号: admin/admin123 或 user/user123')
+        self.info_label.setObjectName('info_label')
         self.info_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.info_label.setStyleSheet('color: rgba(255, 255, 255, 0.8); font-size: 11px;')
-        main_layout.addWidget(self.info_label)
+        card_layout.addWidget(self.info_label)
         
-        main_layout.addSpacing(10)
+        card_layout.addSpacing(32)
         
         # 登录按钮
-        self.login_button = QPushButton('🚀 立即登录')
+        self.login_button = QPushButton('🚀 登录')
         self.login_button.clicked.connect(self.handle_login)
         self.login_button.setCursor(Qt.CursorShape.PointingHandCursor)
-        main_layout.addWidget(self.login_button)
+        card_layout.addWidget(self.login_button)
         
-        main_layout.addSpacing(5)
+        card_layout.addSpacing(18)
         
         # 注册按钮
         self.register_button = QPushButton('✨ 创建新账号')
         self.register_button.setObjectName('register_btn')
         self.register_button.clicked.connect(self.show_register_dialog)
         self.register_button.setCursor(Qt.CursorShape.PointingHandCursor)
-        main_layout.addWidget(self.register_button)
+        card_layout.addWidget(self.register_button)
         
-        main_layout.addStretch()
+        login_card.setLayout(card_layout)
+        main_layout.addWidget(login_card)
+        
+        main_layout.addSpacing(25)
         
         # 版本信息
         version_label = QLabel('Version 1.0.0 | Powered by YOLOv11 🤖')
         version_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        version_label.setStyleSheet('color: rgba(255, 255, 255, 0.6); font-size: 10px;')
+        version_label.setStyleSheet('color: #606060; font-size: 10px; background: transparent;')
         main_layout.addWidget(version_label)
+        
+        main_layout.addSpacing(15)
         
         self.setLayout(main_layout)
         
